@@ -4,44 +4,37 @@ const app = express();
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('API funcionando');
-});
-
-app.get('/alumnos', async (req, res) => {
+app.get('/materias', async (req, res) => {
   try {
-    const resultado = await pool.query('SELECT * FROM alumno');
+    const resultado = await pool.query('SELECT * FROM materia ORDER BY id ASC');
     res.json(resultado.rows);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener los alumnos' });
+    res.status(500).json({ error: 'Error al obtener las materias' });
   }
 });
 
-app.post('/alumnos', async (req, res) => {
+app.post('/materias', async (req, res) => {
   try {
-    const { nombre, apellido, edad, correo } = req.body;
+    const { nombre, semestre, creditos } = req.body;
 
-    if (!nombre || !apellido || !edad || !correo) {
+    if (!nombre || !semestre || !creditos) {
       return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
     const resultado = await pool.query(
-      'INSERT INTO alumno (nombre, apellido, edad, correo) VALUES ($1, $2, $3, $4) RETURNING *',
-      [nombre, apellido, edad, correo]
+      'INSERT INTO materia (nombre, semestre, creditos) VALUES ($1, $2, $3) RETURNING *',
+      [nombre, semestre, creditos]
     );
 
     res.status(201).json({
-      mensaje: 'Alumno insertado correctamente',
-      alumno: resultado.rows[0]
+      mensaje: 'Materia insertada correctamente',
+      materia: resultado.rows[0]
     });
   } catch (error) {
-    if (error.code === '23505') {
-      return res.status(400).json({ error: 'El correo ya está registrado' });
-    }
-    res.status(500).json({ error: 'Error al insertar el alumno' });
+    res.status(500).json({ error: 'Error al insertar la materia' });
   }
 });
 
 app.listen(3000, () => {
-  console.log('Servidor en http://localhost:3000');
+  console.log('Servidor corriendo en puerto 3000');
 });
